@@ -1,0 +1,420 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0" />
+<script type="text/javascript" src="phonegap.js"></script>
+ 
+<script type="text/javascript" src="scripts/jquery.min.js"></script>
+<script type="text/javascript" src="scripts/jquery-ui.min.js"></script>
+<script type="text/javascript" src="scripts/md5.js"></script>
+<script type="text/javascript" src="scripts/jquery.mobile-1.4.5.min.js"></script>
+<script type="text/javascript" src="scripts/jquery.soap.js"></script>
+<link type="text/css" rel="stylesheet" href="css/flatui/jquery.mobile.flatui.css" />
+<link type="text/css" rel="stylesheet" href="css/rtd.css" />
+</head>
+<body>
+  
+<title>Round Table Denmark</title>
+  
+<div data-role="page" id="login-page">
+	<div data-role="content" id="login-page-content">
+		<div align="center"><img src="img/icon-rtd.gif"  class="logo"  /></div>
+		<fieldset>
+			<form onsubmit="do_login();return false;">
+			<label for="login-username">Brugernavn eller email:</label>
+			<input type="text" name="login-username" id="login-username" value="" placeholder="my@email.com" required  />
+			<label for="login-password">Kodeord:</label>
+			<input required type="password" name="login-password" id="login-password" value="" />
+			<button type=submit data-icon="lock">Login</button>
+		</fieldset>
+		<p>RTDapp er under udvikling og funktionaliteten kan derfor være ustabil.</p>
+		<i>1.0.0.418</i>
+		</form>
+	</div>
+</div>
+  
+<div data-role="page" id="front-page">
+	<div data-role="header" data-position="fixed">
+		<a href="#" onclick="do_logoff()"  data-icon="delete">Log af</a>
+		<h1>RTDapp</h1>
+<!--		<a href="#console-output-page" data-icon="gear">Debug</a> -->
+	</div>
+	<div data-role="content" id="front-page-content">
+		<div class="ui-grid-b" >
+			<div class="ui-block-a"><a href="#" onclick="show_my_club()" data-theme="b" data-role="button"><img src="img/icon-club.png" width="100%" /><br>Klub</a></div>
+			<div class="ui-block-b"><a href="#" onclick="show_search()" data-theme="b" data-role="button"><img src="img/icon-search.png" width="100%" /><br>Søg</a></div>
+			<div class="ui-block-c"><a href="#" onclick="show_news()" data-theme="b" data-role="button"><img src="img/icon-news.png" width="100%" /><br>Aktuelt</a></div>
+		</div>	
+		<div class="ui-grid-b" >
+			<div class="ui-block-a"><a href="#" onclick="show_mail()" data-theme="b" data-role="button"><img src="img/icon-msg.png" width="100%" /><br>Besked</a></div>
+			<div class="ui-block-b"><a href="#" onclick="show_gps_page()" data-theme="b" data-role="button"><img src="img/icon-explore.png" width="100%" /><br>Radar</a></div>
+			<div class="ui-block-b"><a href="#" onclick="show_favorites_page()" data-theme="b" data-role="button"><img src="img/icon-fav.png" width="100%" /><br>Favorit</a></div>
+		</div>	
+	</div>
+</div>
+<div data-role="page" id="console-output-page">
+	<div data-role="header" data-position="fixed">
+		<a  href="#front-page" data-icon="delete">Luk</a>
+		<h1>Debug</h1>
+	</div>
+	<div data-role="content" id="console-output">
+	</div>
+</div>
+<div data-role="page" id="favorites-page">
+	<div data-role="header" data-position="fixed">
+		<a  href="#" onclick="show_frontpage()" data-icon="delete">Luk</a>
+		<h1 id="search-header">Favorit</h1>
+		<a href=# onclick="do_empty_favorites()" data-icon="refresh">Nulstil</a>
+	</div>
+	<div data-role="content" id="favorites-page-content">
+		<ul id="favorites-list" data-theme="d" data-role="listview" data-filter="false" data-inset="false"></ul>
+	</div>
+</div>
+<div data-role="page" id="search-page">
+	<div data-role="header" data-position="fixed">
+		<a  href="#" onclick="show_frontpage()" data-icon="delete">Luk</a>
+		<h1 id="search-header">Søgning</h1>
+	</div>
+	<div data-role="content" id="search-page-content">
+		<form onsubmit="do_search(); return false;">
+		<input type=search required id=search-page-term name=search-page-term placeholder="Søgeord ...">
+		</form>
+	</div>
+</div>
+<div data-role="page" id="mail-page">
+	<div data-role="header" data-position="fixed">
+		<a  href="#" onclick="show_frontpage()" data-icon="delete">Luk</a>
+		<h1>Ulæste</h1>
+		<a  href="#" onclick="show_mail()" data-icon="refresh">Opdater</a>
+	</div>
+	<div data-role="content" id="show-mail-content">
+		<ul id="mail-list" data-theme="d" data-role="listview" data-filter="true" data-inset="false"></ul>
+	</div>
+	<div data-role="footer" data-position="fixed" class="ui-bar"> 
+		<a  href="#mail-page-read" data-transition="slide" data-icon="arrow-r">Arkiv</a>
+	</div>
+</div>
+<div data-role="page" id="mail-page-read">
+	<div data-role="header" data-position="fixed">
+		<h1>Læste</h1>
+	</div>
+	<div data-role="content">
+		<ul id="mail-list-read" data-theme="d" data-role="listview" data-filter="true" data-inset="false"></ul>
+	</div>
+	<div data-role="footer" data-position="fixed" class="ui-bar"> 
+		<a  href="#mail-page" data-transition="slide" data-direction="reverse" data-icon="arrow-l">Ulæste</a>
+	</div>
+</div>
+<div data-role="page" id="reply-mail-page">
+	<div data-role="header" data-position="fixed">
+		<a  href="#"data-rel="back" data-icon="back">Fortryd</a>
+		<h1>Besked</h1>
+	</div>
+	<div data-role="content" id="single-mail-content">
+		<ul id="reply-mail-receiver" data-theme="d" data-role="listview" data-filter="false" data-inset="false"></ul>
+		<h1 id="reply-mail-title"></h1>
+		<input type=hidden id="reply-mail-receiver-uid" value=0 />
+		<textarea id="reply-mail-content" placeholder="Indtast besked ..."></textarea>
+	</div>
+	<div data-role="footer" data-position="fixed">
+		<a href=# data-role=button onclick=do_send_reply('#reply-mail-title','#reply-mail-content','#reply-mail-receiver-uid') data-icon=comment>Afsend</a>
+	</div>
+	</form>
+</div>
+<div data-role="page" id="single-mail-page">
+	<div data-role="header" data-position="fixed">
+		<a  href="#" data-rel="back" data-icon="delete">Luk</a>
+		<h1>Besked</h1>
+	</div>
+	<div data-role="content" id="single-mail-content">
+		<ul id="single-mail-sender" data-theme="d" data-role="listview" data-filter="false" data-inset="false"></ul>
+		<h1 id="single-mail-title"></h1>
+		<p id="single-mail-date"></p>
+		<div id="single-mail-body"></div>
+		<a href=# data-role="button" data-icon="action" id="single-mail-attachment"></a>
+		<input type=hidden id="single-mail-index" value=0 />
+	</div>
+	<div data-role="footer" data-position="fixed">
+		<a href=# data-role=button onclick=show_reply() data-icon=comment>Besvar</a>
+	</div>
+</div>
+<div data-role="page" id="gps-page">
+	<div data-role="header" data-position="fixed">
+		<a  href="#" onclick="show_frontpage()" data-icon="delete">Luk</a>
+		<h1 id="search-header">Online</h1>
+		<a  href="#" onclick="show_gps_page()" data-icon="refresh">Opdater</a>
+	</div>
+	<div data-role="content" id="gps-page-content">
+		<ul id="gps-page-online-list" data-theme="d" data-role="listview" data-filter="false" data-inset="false"></ul>
+	</div>
+	<div data-role="footer" data-position="fixed" class="ui-bar"> 
+		<a  href="#gps-page-work" data-transition="slide" data-icon="arrow-r">Arbejde</a>
+	</div>
+</div>
+<div data-role="page" id="gps-page-work">
+	<div data-role="header" data-position="fixed">
+		<a  href="#" onclick="show_frontpage()" data-icon="delete">Luk</a>
+		<h1>Arbejde</h1>
+		<a  href="#" onclick="show_gps_page()" data-icon="refresh">Opdater</a>
+	</div>
+	<div data-role="content">
+		<ul id="gps-page-work-list" data-theme="d" data-role="listview" data-filter="false" data-inset="false"></ul>
+	</div>
+	<div data-role="footer" data-position="fixed" class="ui-bar"> 
+		<a  href="#gps-page" data-transition="slide" data-direction="reverse" data-icon="arrow-l">Online</a>
+		<a  href="#gps-page-home" data-transition="slide" data-icon="arrow-r">Bopæl</a>
+	</div>
+</div>
+<div data-role="page" id="gps-page-home">
+	<div data-role="header" data-position="fixed">
+		<a  href="#" onclick="show_frontpage()" data-icon="delete">Luk</a>
+		<h1>Bopæl</h1>
+		<a  href="#" onclick="show_gps_page()" data-icon="refresh">Opdater</a>
+	</div>
+	<div data-role="content">
+		<ul id="gps-page-home-list" data-theme="d" data-role="listview" data-filter="false" data-inset="false"></ul>
+	</div>
+	<div data-role="footer" data-position="fixed" class="ui-bar"> 
+		<a  href="#gps-page-work" data-transition="slide" data-direction="reverse" data-icon="arrow-l">Arbejde</a>
+		<a  href="#gps-page-meetings" data-transition="slide"  data-icon="arrow-r">Møder</a>
+	</div>
+</div>
+<div data-role="page" id="gps-page-meetings">
+	<div data-role="header" data-position="fixed">
+		<a  href="#" onclick="show_frontpage()" data-icon="delete">Luk</a>
+		<h1>Møder</h1>
+		<a  href="#" onclick="show_gps_page()" data-icon="refresh">Opdater</a>
+	</div>
+	<div data-role="content">
+		<ul id="gps-page-meeting-list" data-theme="d" data-role="listview" data-filter="false" data-inset="false"></ul>
+	</div>
+	<div data-role="footer" data-position="fixed" class="ui-bar"> 
+		<a  href="#gps-page-home" data-transition="slide" data-direction="reverse" data-icon="arrow-l">Bopæl</a>
+	</div>
+</div>
+<div data-role="page" id="search-page-members">
+	<div data-role="header" data-position="fixed">
+		<a  href="#" onclick="show_frontpage()" data-icon="delete">Luk</a>
+		<h1 id="search-header">Søgning</h1>
+	</div>
+	<div data-role="content" id="search-page-content">
+		<h2>Medlemmer (<span id=search-page-list-members-count>0</span>)</h2>
+		<ul id="search-page-list-members" data-theme="d" data-role="listview" data-filter="true" data-inset="false"></ul>
+	</div>
+	<div data-role="footer" data-position="fixed" class="ui-bar"> 
+		<a  href="#search-page" data-transition="slide" data-direction="reverse" data-icon="arrow-l">Søg igen</a>
+		<a  href="#search-page-meetings" data-transition="slide" data-icon="arrow-r">Møder</a>
+	</div>
+</div>
+<div data-role="page" id="search-page-meetings">
+	<div data-role="header" data-position="fixed">
+		<a  href="#" onclick="show_frontpage()" data-icon="delete">Luk</a>
+		<h1 id="search-header">Søgning</h1>
+	</div>
+	<div data-role="content" id="search-page-content">
+		<h2>Møder (<span id=search-page-list-meetings-count>0</span>)</h2>
+		<ul id="search-page-list-meetings" data-theme="d" data-role="listview" data-filter="true" data-inset="false"></ul>
+	</div>
+	<div data-role="footer" data-position="fixed" class="ui-bar"> 
+		<a  href="#search-page-members" data-transition="slide" data-direction="reverse" data-icon="arrow-l">Medlemmer</a>
+		<a  href="#search-page-clubs" data-transition="slide" data-icon="arrow-r">Klubber</a>
+	</div>
+</div>
+<div data-role="page" id="search-page-clubs">
+	<div data-role="header" data-position="fixed">
+		<a  href="#" onclick="show_frontpage()" data-icon="delete">Luk</a>
+		<h1 id="search-header">Søgning</h1>
+	</div>
+	<div data-role="content" id="search-page-content">
+		<h2>Klubber (<span id=search-page-list-clubs-count>0</span>)</h2>
+		<ul id="search-page-list-clubs" data-theme="d" data-role="listview" data-filter="true" data-inset="false"></ul>
+	</div>
+	<div data-role="footer" data-position="fixed" class="ui-bar"> 
+		<a  href="#search-page-meetings" data-transition="slide" data-direction="reverse" data-icon="arrow-l">Møder</a>
+	</div>
+</div>
+<div data-role="page" id="meeting-description-page">
+	<div data-role="header" data-position="fixed">
+		<h1>Møde</h1>
+	</div>
+	<div data-role="content">
+		<div id="meeting-page-description"></div>
+		<h2>Pligter</h2>
+		<ul id="meeting-page-duties" data-theme="d" data-role="listview" data-filter="false" data-inset="false"></ul>
+	</div>
+	<div data-role="footer" data-position="fixed" class="ui-bar"> 
+		<a  href="#meeting-page" data-transition="slide" data-direction="reverse" data-icon="arrow-l">Deltagere</a>
+		<a  href="#meeting-minutes-page" data-transition="slide" data-icon="arrow-r">Referat</a>
+	</div>
+</div>
+<div data-role="page" id="meeting-minutes-page">
+	<div data-role="header" data-position="fixed">
+		<h1>Møde</h1>
+	</div>
+	<div data-role="content">
+		<h2>Referat</h2>
+		<div id="meeting-minutes-content"></div>
+		<h2>3 minutter</h2>
+		<div id="meeting-3min-content"></div>
+		<h2>Breve</h2>
+		<div id="meeting-letters-content"></div>
+	</div>
+	<div data-role="footer" data-position="fixed" class="ui-bar"> 
+		<a  href="#meeting-description-page" data-transition="slide" data-direction="reverse" data-icon="arrow-l">Invitation</a>
+	</div>
+</div>
+<div data-role="page" id="meeting-page">
+	<div data-role="header" data-position="fixed">
+		<a  onclick="show_frontpage()" data-icon="delete">Luk</a>
+		<h1>Møde</h1>
+		<a onclick="do_add_to_calendar()" data-icon="action">Gem</a>
+	</div>
+	<div data-role="content" id="meeting-page-content">
+		<h1 id="meeting-page-title"></h1>
+		<p id="meeting-page-location"></p>
+		<p>Mødetid: <span id=meeting-page-start></span> - <span id=meeting-page-end></span></p>
+		<p>Afstand til mødet: <span id=meeting-page-distance></span></p>
+		
+		
+		<form onsubmit="do_decline_meeting(); return false;" data-theme=b id="meeting-page-decline">
+				<h2>Foretag afbud</h2>
+				<input type=hidden name=meeting-page-decline-cid id=meeting-page-decline-cid value=0>
+				<input type=hidden name=meeting-page-decline-mid id=meeting-page-decline-mid value=0>
+				<input type=text name=meeting-page-decline-comment required id=meeting-page-decline-comment placeholder="Kommentar"/>
+				<input type=submit data-theme=a value="Gem afbud">
+		</form>
+		<form onsubmit="do_accept_meeting(); return false" data-theme=b id="meeting-page-accept">
+				<h2>Tilmeld møde</h2>
+				<input type=hidden name=meeting-page-accept-cid id=meeting-page-accept-cid value=0>
+				<input type=hidden name=meeting-page-accept-mid id=meeting-page-accept-mid value=0>
+				<input type=text name=meeting-page-accept-comment id=meeting-page-accept-comment placeholder="Kommentar"/>
+				<input type=submit data-theme=a value="Gem tilmelding">
+		</form>
+		<h2>Deltagere</h2>
+		<ul data-role="listview" data-theme="d" id="meeting-page-participants"></ul>
+	</div>
+	<div data-role="footer" data-position="fixed" class="ui-bar"> 
+		<a  href="#meeting-description-page" data-transition="slide" data-icon="arrow-r">Invitation</a>
+	</div>
+</div>
+<div data-role="page" id="user-page">
+	<div data-role="header" data-position="fixed">
+		<a  onclick="history.go(-1)" data-icon="delete">Luk</a>
+		<h1>Medlem</h1>
+		<a onclick="do_add_to_contacts()" data-icon="action">Gem</a>
+	</div>
+	<div data-role="content" id="user-page-content">
+		<ul data-role="listview" data-theme="d" id="user-page-contact"></ul>
+		<h1 id=user-page-name></h1>
+		<div class="ui-grid-a">
+			<div class="ui-block-a">
+				<p id=user-page-job></p>
+				<h2>Privat</h2>
+				<p id=user-page-adr></p>
+				<h2>Arbejde</h2>
+				<p id=user-page-adr-company></p>
+			</div>
+			<div class="ui-block-b">
+				<img src="" id=user-page-pic width=100% />
+			</div>
+		</div>
+		<div class="ui-grid-b">
+			<div class="ui-block-a">
+				<h2>Født</h2>
+				<p id=user-page-birth></p>
+			</div>
+			<div class="ui-block-b">
+				<h2>Charter</h2>
+				<p id=user-page-charter></p>
+			</div>
+			<div class="ui-block-c">
+				<h2>Exit</h2>
+				<p id=user-page-exit></p>
+			</div>
+		</div>
+		
+		<div id=user-page-profile></div>
+		
+		<div id=user-page-company-profile></div>
+	</div>
+	<div data-role="footer" data-position="fixed" class="ui-bar"> 
+		<a  data-icon="star" onclick=do_add_favorite_current_user();>Favorit</a>
+	</div>
+</div>
+<div data-role="page" id="club-members-page">
+	<div data-role="header" data-position="fixed">
+		<a  href="#" onclick="close_club_page();" data-icon="delete">Luk</a>
+		<h1 id="club-members-page-header"></h1>
+		<a  href="#" onclick="do_send_message_to_club();" id="club-page-message-to-club" data-icon="comment">Besked</a>
+	</div>
+	<div data-role="content" id="club-page-members-content">
+		<img src="" width="100%" id="club-members-page-logo" />
+		<div id="club-members-listing">
+			<h2>Medlemmer</h2>
+			<ul data-role="listview" data-theme="d" id="club-members-list"></ul>
+		</div>
+	</div>
+	<div data-role="footer" data-position="fixed" class="ui-bar"> 
+		<a  href="#club-page" data-transition="slide" data-direction="reverse" data-icon="arrow-l">Møder</a>
+	</div>
+</div> 
+<div data-role="page" id="news-page">
+	<div data-role="header" data-position="fixed">
+		<a  href="#front-page" data-icon="delete">Luk</a>
+		<h1>Aktuelt</h1>
+	</div>
+	<div  data-role="content" id="news-page-content">
+		<h1>Område</h1>
+		<select onchange="show_district(this.value);" data-theme="d">
+			<option value="0">Hele landet</option>
+			<option value="14">Distrikt 1 - Nordjylland</option>
+			<option value="15">Distrikt 2 - Vestjylland</option>
+			<option value="16">Distrikt 3 - Østjylland</option>
+			<option value="17">Distrikt 4 - Syd- og Sønderjylland</option>
+			<option value="18">Distrikt 5 - Trekantsområdet og Fyn</option>
+			<option value="19">Distrikt 6 - Nordsjælland</option>
+			<option value="20">Distrikt 7 - Sydsjælland og Lolland-Falster</option>
+			<option value="21">Distrikt 8 - København, Bornholm og Grønland</option>
+		</select>
+		<h1>Møder</h1>
+		<div data-role="collapsible-set" data-theme="d" data-inset=false id="news-page-meeting-list" data-content-theme="d"></div>
+		
+		<h1>Referater</h1>
+		<div data-role="collapsible-set" data-theme="d" data-inset=false id="news-page-minutes-list" data-content-theme="d"></div>
+		
+	</div>
+</div>
+<div data-role="page" id="club-page">
+	<div data-role="header" data-position="fixed"> 
+		<a  href="#" onclick="close_club_page();" data-icon="delete">Luk</a>
+		<h1 id="club-page-header"></h1>
+		<a  href="#" onclick="do_send_message_to_club();" id="club-page-message-to-club" data-icon="comment">Besked</a>
+	</div>
+	<div  data-role="content" id="club-page-meetings-content">
+		<img src="" width="100%" id="club-page-logo" />
+		<div id="club-page-meetings">
+			<h2>Møder</h2>
+			<ul data-role="listview" data-theme="d" data-inset=false id="club-page-meetings-list"></ul>
+		</div>
+	</div>
+	<div data-role="footer" data-position="fixed" class="ui-bar"> 
+		<a  href="#club-members-page" data-transition="slide" data-icon="arrow-r">Medlemmer</a>
+	</div>
+</div>
+<div data-role="page" id="information-page">
+	<div data-role="header" data-position="fixed">
+		<a data-rel="back"  data-icon="delete">Luk</a>
+		<h1>Information</h1>
+	</div>
+	<div data-role="content" id="1information-page-content"></div>
+</div>
+</body> 
+</html>
+<script type="text/javascript" src="swipemanager.js"></script>
+<script type="text/javascript" src="geolocation.js"></script>
+<script type="text/javascript" src="rtd_is.js"></script>
+<script type="text/javascript" src="rtd_do.js"></script>
+<script type="text/javascript" src="rtd_show.js"></script>
+<script type="text/javascript" src="rtd_terms.js"></script>
+<script type="text/javascript" src="rtd.js"></script>
+</html>

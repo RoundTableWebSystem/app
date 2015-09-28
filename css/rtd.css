@@ -1,0 +1,7 @@
+﻿img.logo { width: 33%; }
+
+#front-page
+ {
+	background-image: url("../img/background.png");
+	background-color: white;
+ }
