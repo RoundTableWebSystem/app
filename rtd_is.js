@@ -1,4 +1,33 @@
-﻿function is_logged_in()
+﻿function is_offline_data_updated()
+{
+	var last_update = localStorage.getItem(DATABASE_LAST_UPDATE_FIELD);
+	
+	if (last_update == null || last_update == 0)
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
+
+function is_active_member(member)
+{
+	if (member.profile_ended !== undefined)
+	{
+		var exit_date = do_sqldate_to_jsdate(member.profile_ended).getTime();
+		
+		if (exit_date < do_get_current_ts())
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+
+function is_logged_in()
 {
 	return do_get_userdata() != null;
 }
